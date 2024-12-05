@@ -27,3 +27,6 @@ async def main(bot):
 if __name__ == "__main__":
     print("ready to work..")
     asyncio.run(main(bot))
+
+
+#xp

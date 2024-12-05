@@ -1,16 +1,17 @@
 import asyncio
 import logging
 import sqlite3
+import types
 from bot import bot
-from WB_PARSER import GET_PRICE
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.utils.markdown import hbold
-
+from WB_PARSER import get_price_history_report, GET_PRICE
 from data.database import Database
 from handlers.price_tracker import PriceTracker
 from keyboards.reply import main_menu
+from aiogram.types import InputFile
 
 router = Router()
 pt = PriceTracker()
@@ -98,18 +99,22 @@ async def help_command(message: Message):
     )
 
 
-@router.message(Command("add"))
-async def add_product(message: Message):
+
+
+
+
+@router.message(Command("history"))
+async def get_history(message: Message):
     args = message.text.split(maxsplit=1)
     if len(args) < 2:
-        await message.reply("Пожалуйста, отправьте команду в формате /add \'ссылка на товар\'")
+        await message.reply("Пожалуйста, отправьте команду в формате /history <product_id>")
         return
-    url = args[1]
-    product_id = await db.add_product(url, message.from_user.id)
-    if product_id:
-        await message.reply(f"✅ Товар добавлен для отслеживания. ID: {hbold(product_id)}")
-    else:
-        await message.reply("❌ Не удалось добавить товар. Проверьте ссылку и попробуйте снова.")
+
+    product_id = args[1]
+    
+    # Получаем отчет о ценах для товара
+    report = get_price_history_report(product_id)
+    await message.reply(report)
 
 
 @router.message(Command("mylist"))

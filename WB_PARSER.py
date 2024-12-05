@@ -1,4 +1,10 @@
+import io
 import requests
+import matplotlib.pyplot as plt
+from datetime import datetime
+
+
+
 
 async def GET_PRICE(CODE):
     headers = {
@@ -35,3 +41,34 @@ async def GET_PRICE(CODE):
     # Если запрос не удался
     print(f"Error fetching price, status code: {response.status_code}")
     return None
+
+
+
+
+
+RUB_TO_BYN_RATE = 0.035  # Пример курса: 1 российский рубль = 0.035 белорусских рублей
+
+def fetch_price_history(id):
+
+    print(id)
+    response = requests.get(f'https://basket-12.wbbasket.ru/vol{id[:-5]}/{id[:-3]}/{id}/info/price-history.json') #174885003
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Ошибка получения данных, статус-код: {response.status_code}")
+        return []
+
+def get_price_history_report(id):
+    print(id)
+    price_data = fetch_price_history(id)
+    report = "История изменения цен:\n\n"
+    report += "{:<12} {:<20}\n".format("Дата", "Цена (BYN)")
+
+    for item in price_data:
+        date = datetime.utcfromtimestamp(item['dt']).strftime('%Y-%m-%d')
+        price = (item['price']['RUB'] / 100.0) * RUB_TO_BYN_RATE  # Перевод в белорусские рубли
+        report += "{:<12} {:<20.2f}\n".format(date, price)
+
+    return report
+
+
